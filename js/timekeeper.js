@@ -129,13 +129,12 @@ $(function(){
 	var re = /(\-?)(\d+):(\d+)/.exec(minSecStr);
 
 	if (re && (re[3] < 60)) {
-	    var sign = re[1], h = 0, m = re[2], s = re[3];
+	    var sign = re[1], h, m = re[2], s = re[3];
 	    /* Legintimate second value.
 	       Calculating canonical h, m where m is less than 60;  */
-	    m = m % 60;
 	    h = parseInt(m / 60);
-	    var dt;
-	    dt = new Date(2011, 1, 1, h, m, s);
+	    m = m % 60;
+	    var dt = new Date(2011, 1, 1, h, m, s);
 	    if (sign) {
 		if (debug) errMesg += "Neg "+ minSecStr + " ";
 		dt = basetime;
@@ -145,7 +144,7 @@ $(function(){
 		dt = new Date(negdtVal);
 		if (debug)  errMesg += "nval=" + dt.getMinutes() + ":" + dt.getSeconds() + ",";
 	    } else {
-		if (debug)  errMesg += minSecStr + ", ";
+		if (debug)  errMesg += minSecStr + " h=" +  h + ", ";
 	    }
 	    return dt;
 	} else {
@@ -227,7 +226,6 @@ $(function(){
 	if($('.navbar-nav li#standby').hasClass('active')){
 	    return;
 	}
-
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#pause').addClass('active');
 	update_time();
@@ -240,12 +238,8 @@ $(function(){
 	if($('.navbar-ctl li#debug').hasClass('active')){
 	    return;
 	}
-
 	$('.navbar-ctl li').removeClass('active');
-	$('.nav li#pause').addClass('active');
-	changeStateClass('paused');
     });
-
     
     function resize_display() {
 	var height=$('body').height();
@@ -274,7 +268,7 @@ $(function(){
     });
 
     function show_time(){
-	var disp_time, h;
+	var disp_time, h, m;
 	if (neg_time) {
 	    disp_time = new Date(basetime - time_inner); // get positive delta from basetime
 	    // h = disp_time.getHours();
@@ -283,9 +277,14 @@ $(function(){
 	    disp_time = time_inner;
 	    h = disp_time.getHours();
 	}
-
-        var time_str=('000' + ((h * 60) + disp_time.getMinutes()) ).slice(-3) + ':'
-	    + ('00' +  disp_time.getSeconds() ).slice(-2);
+	m = (h * 60) + disp_time.getMinutes();
+	var time_str;
+	if (m >= 100) {
+	    time_str = ('000' + m).slice(-3);
+	} else {
+	    time_str = '&nbsp;' + ('00'+ m).slice(-2);
+	}
+        time_str += ':' + ('00' +  disp_time.getSeconds() ).slice(-2);
         $('#time').html(time_str);
     }
     
