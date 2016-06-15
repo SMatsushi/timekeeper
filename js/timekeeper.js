@@ -2,6 +2,7 @@
   The MIT License (MIT)
 
   Copyright (c) 2014-2016 Ichiro Maruta
+  Copyright (c) 2016 Satoshi Matsushita
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +23,80 @@
   THE SOFTWARE.
 */
 
+/*
+  An Presentation Timer with Bells by Satoshi Matsushita on June 15, 2016
+  
+  Features:
+   1. Count down timer: starting with 'totalTime'.
+   2. At amber time, bell-1 ringed. Clock face becomes amber.
+   3. At red time (aka. time=00:00), bell-2 ringed. Clock face becomes red.
+      'OVER TIME' message displayed. Timer is then count up.
+   4. Three digit for minute. Maximum duration is '999 minute 59 second=999:59'
+   5. Value can be given http arguments or input form at navigation bar.
+   6. Illegal time is checked and error meesage is shown in message line.
+   7. End bell is not working yet..
+
+*/
+
+/*
+ ****  Basic algorithm ***
+Virtual time counter relative to baseTime:
+   baseTime is 2011/1/1 0:0:0
+
+   totalTime  = 2011/1/1 0:totalTime
+   time1      = 2011/1/1 0:time1 (amber bell)
+   time2      = 2011/1/1 0:time2 (red bell)
+   time3      = 2011/1/1 0:time3 (end bell)
+
+Current Timer:
+   timeInner = virtual time relative from baseTime.
+
+   timeInner is compared to time1, time2, time3 for
+      bell, message, or state change.
+
+At Events:
+Start)
+ - set startClock = Date();
+ 　　
+Timer Update) 
+ - Triggered by a helper function $.timer()
+
+ - Updating timeInner as follows, which is a key:
+  curClock = Date(); // current realtime clock
+  timeInner=new Date(totalTime - (curClock - startClock));
+
+For Display:
+ if (negTime == true) {
+ 　  dispTime = new Date(baseTime - timeInner); 
+　} else {
+     dispTime = timeInner;
+ }
+ Then merging hours to minutes for minutes greater than 59 min.
+
+pause)
+ totalTime = timeInner; // set restarting time
+
+*/
+
 $(function(){
     var loadedcss = '';
     var debug = true;
+    var mute = false;
 
     // default parameters
     if (debug) {
-	$('#totaltime').val('0:06');
+	$('#totalTime').val('0:06');
 	$('#time1').val('0:03');
 	$('#time3').val('-0:05');
     } else {
-	$('#totaltime').val('25:00');
+	$('#totalTime').val('25:00');
 	$('#time1').val('5:00');
 	$('#time3').val('-5:00');
     }
     $('#time2').val('00:00');
     $('#info').html("Click to edit this message.");
+
+    debug = false;
 
     function getHashParams() {
         var hashParams = {};
@@ -55,7 +114,7 @@ $(function(){
 
     function parseHashParams(){
         params = getHashParams();
-        if(params.tt !== undefined) $('#totaltime').val(params.tt);
+        if(params.tt !== undefined) $('#totalTime').val(params.tt);
         if(params.t1 !== undefined) $('#time1').val(params.t1);
 	if(params.t2 !== undefined) $('#time2').val(params.t2);
 	if(params.t3 !== undefined) $('#time3').val(params.t3);
@@ -73,7 +132,7 @@ $(function(){
 
     function updateHash() {
         var hashstr =
-	      '#tt=' + $('#totaltime').val()
+	      '#tt=' + $('#totalTime').val()
 	    + '&t1=' + $('#time1').val()
 	    + '&t2=' + $('#time2').val()
 	    + '&t3=' + $('#time3').val()
@@ -96,7 +155,7 @@ $(function(){
     parseHashParams();
     updateHash();
 
-    $('#totaltime,#time1,#time2,#time3,#info').change(function(){
+    $('#totalTime,#time1,#time2,#time3,#info').change(function(){
 	updateHash();
     });
 
@@ -113,10 +172,10 @@ $(function(){
     audio_chime2 = new Audio("./wav/chime2.wav");
     audio_chime3 = new Audio("./wav/chime3.wav");
 
-    var basetime =  new Date('2011/1/1 00:00:00');
+    var baseTime =  new Date('2011/1/1 00:00:00');
     var time_color;
-    var neg_time = false;
-    var totaltime, time1, time2, time3;
+    var negTime = false;
+    var totalTime, time1, time2, time3;
     function changeStateClass(s) {
 	$('body').removeClass(function(index, className) {
 	    return (className.match(/\bstate-\S+/g) || []).join(' ');
@@ -137,7 +196,7 @@ $(function(){
 	    var dt = new Date(2011, 1, 1, h, m, s);
 	    if (sign) {
 		if (debug) errMesg += "Neg "+ minSecStr + " ";
-		dt = basetime;
+		dt = baseTime;
 		if (debug) errMesg += "val=" + dt.getMinutes() + ":" + dt.getSeconds() + " ";
 		var dtVal = dt.getTime(); // mili-second
 		var negdtVal = dtVal - ((h*3600) + (m*60) + s) * 1000;
@@ -154,29 +213,29 @@ $(function(){
     }
 
     function changePhaseClass(s) {
-	if (s == 0) {
+	if (s == 0) { // start
 	    // initialize time valuables at stdby
 	    errMesg = "";
-	    totaltime = setDate($('#totaltime').val());
+	    totalTime = setDate($('#totalTime').val());
 	    time1 = setDate($('#time1').val());
 	    time2 = setDate($('#time2').val());
 	    time3 = setDate($('#time3').val());
-	    // errMesg += basetime + " time3=" + time3;
+	    // errMesg += baseTime + " time3=" + time3;
 	    if (errMesg != "") 	$('#info').html(errMesg);
 	    /*
-	    totaltime = new Date('2011/1/1 00:' + $('#totaltime').val());
+	    Totaltime = new Date('2011/1/1 00:' + $('#totalTime').val());
 	    time1 = new Date('2011/1/1 00:'+$('#time1').val());
 	    time2 = new Date('2011/1/1 00:'+$('#time2').val());
 	    time3 = new Date('2011/1/1 00:'+$('#time3').val());
 	    */
 	    time_color = "white";
-	    neg_time = false;
+	    negTime = false;
 	    $('#state').html('');
-	} else if (s == 1) {
+	} else if (s == 1) { // warning
 	    time_color = "yellow";
-	} else if (s == 2) {
+	} else if (s == 2) { // timeout
 	    time_color = "red";
-	    neg_time = true;
+	    negTime = true;
 	    $('#state').html('OVER TIME');
 	}
 	$('body').removeClass(function(index, className) {
@@ -192,18 +251,17 @@ $(function(){
 	$('#state').html('STANDBY');
 	changeStateClass('standby');
 	changePhaseClass('0');
-	time_inner = new Date(totaltime); 
-	// $('#info').html("time_inner=" + time_inner);
+	timeInner = new Date(totalTime); 
+	// $('#info').html("timeInner=" + timeInner);
 	show_time();
     });
     changeStateClass('standby');
     changePhaseClass('0');
 
-    var start_clock, zero_clock;
-    var last_time;
+    var startClock, lastTime;
     function setClock(){
-	start_clock = new Date();
-	zero_clock = new Date(start_clock + (time2 - basetime));
+	startClock = new Date();
+	// zeroClock = new Date(startClock + (time2 - baseTime));
     }
     setClock();
 
@@ -214,10 +272,13 @@ $(function(){
 	}
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#start').addClass('active');
-	$('#state').html('');
+	if (negTime == true)
+	    $('#state').html('OVER TIME');
+	else
+	    $('#state').html('');
 	changeStateClass('start');
 	setClock();
-	last_time = totaltime;
+	lastTime = totalTime;
 	audio_chime1.load();
 	audio_chime2.load();
 	audio_chime3.load();
@@ -231,6 +292,7 @@ $(function(){
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#pause').addClass('active');
 	update_time();
+	totalTime = timeInner;
 	$('#state').html('PAUSED');
 	changeStateClass('paused');
     });
@@ -238,10 +300,32 @@ $(function(){
     $('.nav #debug').click(function (event){
 	event.preventDefault();
 	if($('.navbar-ctl li#debug').hasClass('active')){
-	    return;
+	    $('.navbar-ctl li#debug').removeClass('active');
+	    $('.navbar-ctl li#debug').removeClass('focus');
+	    $('#state').html('Debug Off');
+	    debug = false;
+	} else {
+	    $('#state').html('Debug On');
+	    debug = true;
+	    $('.navbar-ctl li#debug').addClass('active');
+	    $('.navbar-ctl li#debug').addClass('focus');
 	}
-	$('.navbar-ctl li').removeClass('active');
     });
+    
+    $('.nav #mute').click(function (event){
+	event.preventDefault();
+	if($('.navbar-ctl li#mute').hasClass('active')){
+	    $('.navbar-ctl li#mute').removeClass('active');
+	    $('#state').html('Sound On');
+	    mute = false;
+	} else {
+	    $('#state').html('Mute');
+	    mute = true;
+	    $('.navbar-ctl li#mute').addClass('active');
+	    $('.navbar-ctl li#mute').addClass('focus');
+	}
+    });
+
     
     function resize_display() {
 	var height=$('body').height();
@@ -264,35 +348,36 @@ $(function(){
 
     $('#soundcheck').click(function (event){
 	event.preventDefault();
+	if (mute) return;
 	audio_chime1.load();
 	audio_chime1.currentTime = 0;
 	audio_chime1.play();
     });
 
     function show_time(){
-	var disp_time, h, m;
-	if (neg_time) {
-	    disp_time = new Date(basetime - time_inner); // get positive delta from basetime
-	    // h = disp_time.getHours();
+	var dispTime, h, m;
+	if (negTime) {
+	    dispTime = new Date(baseTime - timeInner); // get positive delta from baseTime
+	    // h = dispTime.getHours();
 	    h = 0;
 	} else {
-	    disp_time = time_inner;
-	    h = disp_time.getHours();
+	    dispTime = timeInner;
+	    h = dispTime.getHours();
 	}
-	m = (h * 60) + disp_time.getMinutes();
-	var time_str;
+	m = (h * 60) + dispTime.getMinutes();
+	var timeStr;
 	if (m >= 100) {
-	    time_str = ('000' + m).slice(-3);
+	    timeStr = ('000' + m).slice(-3);
 	} else {
-	    time_str = '&nbsp;' + ('00'+ m).slice(-2);
+	    timeStr = '&nbsp;' + ('00'+ m).slice(-2);
 	}
-        time_str += ':' + ('00' +  disp_time.getSeconds() ).slice(-2);
-        $('#time').html(time_str);
+        timeStr += ':' + ('00' +  dispTime.getSeconds() ).slice(-2);
+        $('#time').html(timeStr);
     }
     
     function update_time(){
-	var cur_clock=new Date();
-	time_inner=new Date(totaltime - (cur_clock - start_clock)); // count down from totaltime
+	var curClock=new Date();
+	timeInner=new Date(totalTime - (curClock - startClock)); // count down from totalTime
 	show_time();
     }
 
@@ -301,21 +386,27 @@ $(function(){
 	resize_display();
 	if($('.nav li#start').hasClass('active')){
 	    update_time();
-	    if(time_inner <= time1 && last_time > time1){
+	    if(timeInner <= time1 && lastTime > time1){
 		changePhaseClass('1');
-		audio_chime1.currentTime = 0;
-		audio_chime1.play();
-	    } else if(time_inner <= time2 && last_time > time2){
+		if (!mute) {
+		    audio_chime1.currentTime = 0;
+		    audio_chime1.play();
+		}
+	    } else if(timeInner <= time2 && lastTime > time2){ // time gets zero
 		changePhaseClass('2');
-		audio_chime2.currentTime = 0;
-		audio_chime2.play();
-		$('#info').html(last_time + " time3=" + time3);
-	    } else if(time_inner <= time3 && last_time > time3){
+		if (!mute) {
+		    audio_chime2.currentTime = 0;
+		    audio_chime2.play();
+		}
+		if (debug) $('#info').html(lastTime + " time3=" + time3);
+	    } else if(timeInner <= time3 && lastTime > time3){
 		changePhaseClass('3');
-		audio_chime3.currentTime = 0;
-		audio_chime3.play();
+		if (!mute) {
+		    audio_chime3.currentTime = 0;
+		    audio_chime3.play();
+		}
 	    }
-	    last_time=time_inner;
+	    lastTime = timeInner;
 	}
     })
 });
