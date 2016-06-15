@@ -171,11 +171,13 @@ $(function(){
 	    */
 	    time_color = "white";
 	    neg_time = false;
+	    $('#state').html('');
 	} else if (s == 1) {
 	    time_color = "yellow";
 	} else if (s == 2) {
 	    time_color = "red";
 	    neg_time = true;
+	    $('#state').html('OVER TIME');
 	}
 	$('body').removeClass(function(index, className) {
 	    return (className.match(/\bphase-\S+/g) || []).join(' ');
