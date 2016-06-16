@@ -177,6 +177,16 @@ $(function(){
     var negTime = false;
     var totalTime, time1Amb, time2, time3;
     function changeStateClass(s) {
+	if (s == 'standby') {        // standby
+	    $('#state').html('STANDBY');
+	} else if (s == 'start') {        // standby
+	    if (negTime == true)
+		$('#state').html('OVER TIME');
+	    else
+		$('#state').html('');
+	} else if (s == 'paused') {        //  paused
+	    $('#state').html('PAUSED');
+	}
 	$('body').removeClass(function(index, className) {
 	    return (className.match(/\bstate-\S+/g) || []).join(' ');
 	});
@@ -213,7 +223,7 @@ $(function(){
     }
 
     function changePhaseClass(s) {
-	if (s == 0) { // start
+	if (s == '0') { // phase0 - start
 	    // initialize time valuables at stdby
 	    errMesg = "";
 	    totalTime = setDate($('#totalTime').val());
@@ -221,17 +231,12 @@ $(function(){
 	    time2Red = setDate($('#time2').val());
 	    time3End = setDate($('#time3').val());
 	    if (errMesg != "") 	$('#info').html(errMesg);
-	    /*
-	    Totaltime = new Date('2011/1/1 00:' + $('#totalTime').val());
-	    time1Amb = new Date('2011/1/1 00:'+$('#time1').val());
-	    time2Red = new Date('2011/1/1 00:'+$('#time2').val());
-	    time3End = new Date('2011/1/1 00:'+$('#time3').val());
-	    */
 	    negTime = false;
-	    $('#state').html('');
-	} else if (s == 1) { // warning
-	} else if (s == 2) { // timeout
+	} else if (s == '1') { // phase1 - Amber
+	} else if (s == '2') { // phase2 - Red
 	    negTime = true;
+	    $('#state').html('OVER TIME');
+	} else if (s == '3') { // phase2 - End
 	    $('#state').html('OVER TIME');
 	}
 	$('body').removeClass(function(index, className) {
@@ -244,7 +249,6 @@ $(function(){
 	event.preventDefault();
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#standby').addClass('active');
-	$('#state').html('STANDBY');
 	changeStateClass('standby');
 	changePhaseClass('0');
 	timeInner = new Date(totalTime); 
@@ -257,7 +261,7 @@ $(function(){
     var startClock, lastTime;
     function setClock(){
 	startClock = new Date();
-	// zeroClock = new Date(startClock + (time2Red - baseTime));
+	// zeroClock = new Date(startClock + (time2Red - baseTime)); // Unused
     }
     setClock();
 
@@ -268,10 +272,6 @@ $(function(){
 	}
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#start').addClass('active');
-	if (negTime == true)
-	    $('#state').html('OVER TIME');
-	else
-	    $('#state').html('');
 	changeStateClass('start');
 	setClock();
 	lastTime = totalTime;
@@ -285,11 +285,13 @@ $(function(){
 	if($('.navbar-nav li#standby').hasClass('active')){
 	    return;
 	}
+	if($('.navbar-nav li#pause').hasClass('active')){
+	    return;
+	}
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#pause').addClass('active');
 	update_time();
 	totalTime = timeInner;
-	$('#state').html('PAUSED');
 	changeStateClass('paused');
     });
 
