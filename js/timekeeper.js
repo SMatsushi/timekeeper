@@ -28,30 +28,31 @@
   
   Features:
    1. Count down timer: starting with 'totalTime'.
-   2. At amber time, bell-1 ringed. Clock face becomes amber.
-   3. At red time (aka. time=00:00), bell-2 ringed. Clock face becomes red.
+   2. At amber time, bell-1 rings. Clock face becomes amber.
+   3. At red time (aka. time=00:00), bell-2 rings. Clock face becomes red.
       'OVER TIME' message displayed. Timer is then count up.
-   4. Three digit for minute. Maximum duration is '999 minute 59 second=999:59'
-   5. Value can be given http arguments or input form at navigation bar.
-   6. Illegal time is checked and error meesage is shown in message line.
-   7. End bell is not working yet..
-
+   4. At end time, bell-3 rings, Clock face becomes purple.
+   5. The color is defined in theme/default.css, which can be changed by parameter.
+   6. Three digit for minute. Maximum duration is '999 minute 59 second=999:59'
+   7. Value can be given http arguments or input form at navigation bar.
+   8. Illegal time is checked and error meesage is shown in message line.
+   9. Mute, Debug button works, but button color is not changed by those activate state.
 */
 
 /*
  ****  Basic algorithm ***
 Virtual time counter relative to baseTime:
-   baseTime is 2011/1/1 0:0:0
+   baseTime is 2011/2/1 0:0:0  // Note: Date(2011,0,1,...)
 
-   totalTime  = 2011/1/1 0:totalTime
-   time1      = 2011/1/1 0:time1 (amber bell)
-   time2      = 2011/1/1 0:time2 (red bell)
-   time3      = 2011/1/1 0:time3 (end bell)
+   totalTime  = 2011/2/1 0:totalTime
+   time1Amb   = 2011/2/1 0:time1 (amber bell)
+   time2Red   = 2011/2/1 0:time2 (red bell)
+   time3End   = 2011/2/1 0:time3 (end bell)
 
 Current Timer:
    timeInner = virtual time relative from baseTime.
 
-   timeInner is compared to time1, time2, time3 for
+   timeInner is compared to time1Amb, time2Red, time3End for
       bell, message, or state change.
 
 At Events:
@@ -172,10 +173,9 @@ $(function(){
     audio_chime2 = new Audio("./wav/chime2.wav");
     audio_chime3 = new Audio("./wav/chime3.wav");
 
-    var baseTime =  new Date('2011/1/1 00:00:00');
-    var time_color;
+    var baseTime =  new Date('2011/2/1 00:00:00');
     var negTime = false;
-    var totalTime, time1, time2, time3;
+    var totalTime, time1Amb, time2, time3;
     function changeStateClass(s) {
 	$('body').removeClass(function(index, className) {
 	    return (className.match(/\bstate-\S+/g) || []).join(' ');
@@ -193,7 +193,7 @@ $(function(){
 	       Calculating canonical h, m where m is less than 60;  */
 	    h = parseInt(m / 60);
 	    m = m % 60;
-	    var dt = new Date(2011, 1, 1, h, m, s);
+	    var dt = new Date(2011, 1, 1, h, m, s); // date = 2011/2/1
 	    if (sign) {
 		if (debug) errMesg += "Neg "+ minSecStr + " ";
 		dt = baseTime;
@@ -217,24 +217,20 @@ $(function(){
 	    // initialize time valuables at stdby
 	    errMesg = "";
 	    totalTime = setDate($('#totalTime').val());
-	    time1 = setDate($('#time1').val());
-	    time2 = setDate($('#time2').val());
-	    time3 = setDate($('#time3').val());
-	    // errMesg += baseTime + " time3=" + time3;
+	    time1Amb = setDate($('#time1').val());
+	    time2Red = setDate($('#time2').val());
+	    time3End = setDate($('#time3').val());
 	    if (errMesg != "") 	$('#info').html(errMesg);
 	    /*
 	    Totaltime = new Date('2011/1/1 00:' + $('#totalTime').val());
-	    time1 = new Date('2011/1/1 00:'+$('#time1').val());
-	    time2 = new Date('2011/1/1 00:'+$('#time2').val());
-	    time3 = new Date('2011/1/1 00:'+$('#time3').val());
+	    time1Amb = new Date('2011/1/1 00:'+$('#time1').val());
+	    time2Red = new Date('2011/1/1 00:'+$('#time2').val());
+	    time3End = new Date('2011/1/1 00:'+$('#time3').val());
 	    */
-	    time_color = "white";
 	    negTime = false;
 	    $('#state').html('');
 	} else if (s == 1) { // warning
-	    time_color = "yellow";
 	} else if (s == 2) { // timeout
-	    time_color = "red";
 	    negTime = true;
 	    $('#state').html('OVER TIME');
 	}
@@ -261,7 +257,7 @@ $(function(){
     var startClock, lastTime;
     function setClock(){
 	startClock = new Date();
-	// zeroClock = new Date(startClock + (time2 - baseTime));
+	// zeroClock = new Date(startClock + (time2Red - baseTime));
     }
     setClock();
 
@@ -342,7 +338,7 @@ $(function(){
 	$('#info').css('top',height/2+theight/2);
 	$('#info').css('font-size',iheight+'px');
 	$('#info').css('line-height',iheight+'px');
-	$('#time').css('color', time_color);
+	// $('#time').css('color', time_color); // color changes by css loaded by param.th or loadedcss
     }
     $(window).bind("resize", resize_display);
 
@@ -386,20 +382,20 @@ $(function(){
 	resize_display();
 	if($('.nav li#start').hasClass('active')){
 	    update_time();
-	    if(timeInner <= time1 && lastTime > time1){
+	    if(timeInner <= time1Amb && lastTime > time1Amb){
 		changePhaseClass('1');
 		if (!mute) {
 		    audio_chime1.currentTime = 0;
 		    audio_chime1.play();
 		}
-	    } else if(timeInner <= time2 && lastTime > time2){ // time gets zero
+	    } else if(timeInner <= time2Red && lastTime > time2Red){ // time gets zero
 		changePhaseClass('2');
 		if (!mute) {
 		    audio_chime2.currentTime = 0;
 		    audio_chime2.play();
 		}
-		if (debug) $('#info').html(lastTime + " time3=" + time3);
-	    } else if(timeInner <= time3 && lastTime > time3){
+		if (debug) $('#info').html(lastTime + " time3=" + time3End);
+	    } else if(timeInner <= time3End && lastTime > time3End){
 		changePhaseClass('3');
 		if (!mute) {
 		    audio_chime3.currentTime = 0;

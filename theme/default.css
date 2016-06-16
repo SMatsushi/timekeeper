@@ -16,17 +16,30 @@
 	/* styles for body element */
 }
 
+.phase-1 #time{
+	/* style for displayed time can be changed in this way */
+    color: yellow;
+}
+
+
 /* after 2nd chime before 3rd chime */
 .phase-2{
 	/* styles for body element */
 }
 .phase-2 #time{
 	/* style for displayed time can be changed in this way */
+    color: red;
 }
 
 /* after 3rd chime */
 .phase-3{
 	/* styles for body element */
+}
+
+/* after 3rd chime */
+.phase-3 #time{
+	/* styles for body element */
+    color: purple;
 }
 
 
