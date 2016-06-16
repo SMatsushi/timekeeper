@@ -36,7 +36,8 @@
    6. Three digit for minute. Maximum duration is '999 minute 59 second=999:59'
    7. Value can be given http arguments or input form at navigation bar.
    8. Illegal time is checked and error meesage is shown in message line.
-   9. Mute, Debug button works, but button color is not changed by those activate state.
+   9. Using nav-pills for a pull down menu of all three bell checking
+   10. Mute, Debug button works, use button highlight to show its active state
 */
 
 /*
@@ -218,7 +219,6 @@ $(function(){
 	    return dt;
 	} else {
 	    errMesg += "Format error in '"+ minSecStr + "', ";
-	    // $('#info').html("Format error in '"+ minSecStr + "'");
 	}
     }
 
@@ -297,30 +297,29 @@ $(function(){
 
     $('.nav #debug').click(function (event){
 	event.preventDefault();
-	if($('.navbar-ctl li#debug').hasClass('active')){
-	    $('.navbar-ctl li#debug').removeClass('active');
-	    $('.navbar-ctl li#debug').removeClass('focus');
+	if( $('.nav #debug').hasClass('active')){
+	    $('.nav #debug').removeClass('active');
 	    $('#state').html('Debug Off');
 	    debug = false;
 	} else {
 	    $('#state').html('Debug On');
 	    debug = true;
-	    $('.navbar-ctl li#debug').addClass('active');
-	    $('.navbar-ctl li#debug').addClass('focus');
+	    $('.nav #debug').addClass('active');
 	}
     });
     
     $('.nav #mute').click(function (event){
 	event.preventDefault();
-	if($('.navbar-ctl li#mute').hasClass('active')){
-	    $('.navbar-ctl li#mute').removeClass('active');
+	if($('.nav li#mute').hasClass('active')){
+	    $('.nav li#mute').removeClass('active');
+	    $('.nav li#mute').removeClass('focus');
 	    $('#state').html('Sound On');
 	    mute = false;
 	} else {
 	    $('#state').html('Mute');
 	    mute = true;
-	    $('.navbar-ctl li#mute').addClass('active');
-	    $('.navbar-ctl li#mute').addClass('focus');
+	    $('.nav li#mute').addClass('active');
+	    $('.nav li#mute').addClass('focus');
 	}
     });
 
@@ -344,12 +343,28 @@ $(function(){
     }
     $(window).bind("resize", resize_display);
 
-    $('#soundcheck').click(function (event){
+    $('.nav #bell1check').click(function (event){
 	event.preventDefault();
 	if (mute) return;
 	audio_chime1.load();
 	audio_chime1.currentTime = 0;
 	audio_chime1.play();
+    });
+
+    $('.nav #bell2check').click(function (event){
+	event.preventDefault();
+	if (mute) return;
+	audio_chime2.load();
+	audio_chime2.currentTime = 0;
+	audio_chime2.play();
+    });
+
+    $('.nav #bell3check').click(function (event){
+	event.preventDefault();
+	if (mute) return;
+	audio_chime3.load();
+	audio_chime3.currentTime = 0;
+	audio_chime3.play();
     });
 
     function show_time(){

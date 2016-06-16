@@ -37,18 +37,31 @@
       	  <input id="time3" class="form-control" data-toggle="tooltip" data-placement="bottom" title="end bell" type="text" style="width:5em;">
         </div>
       </form>
-      <ul class="nav navbar-ctl navbar-right">
-        <li id="debug"><a href="#debug" data-toggle="tooltip" data-placement="bottom" title="Toggle Debug Mode">
+      <ul class="nav nav-pills navbar-right">
+        <li id="debug">
+	  <a href="#debug" data-toggle="tooltip" data-placement="bottom" title="Toggle Debug Mode">
 	    <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
-	    <span class="hidden-xs">Debug</span></a></li>
-        <li id="mute"><a href="#mute" data-toggle="tooltip" data-placement="bottom" title="Toggle Mute">
+	    <span class="hidden-xs">Debug</span>
+	</a></li>
+        <li id="mute">
+	  <a href="#mute" data-toggle="tooltip" data-placement="bottom" title="Toggle Mute">
 	    <span class="glyphicon glyphicon-music" aria-hidden="true"></span>
-	    <span class="hidden-xs">Mute</span></a></li>
-        <li id="soundcheck">
-	  <a href="#soundcheck" data-toggle="tooltip" data-placement="bottom" title="Sound Check">
-	    <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span>
-	    <span class="hidden-xs hidden-sm">Sound Check</span>
+	    <span class="hidden-xs">Mute</span>
+	</a></li>
+	<li id="soundcheck" class="dropdown">
+	  <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
+	    <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span>  
+	    <span class="hidden-xs hidden-sm">
+	      Sound Check<span class="caret"></span>
 	  </a>
+	  <ul class="dropdown-menu" role="menu">
+	    <li id="bell1check" > <a href="#bell1check" data-toggle="tooltip" data-placement="bottom" title="Amber Bell">
+		Bell 1</span></a></li>
+	    <li id="bell2check"> <a href="#bell2check" data-toggle="tooltip" data-placement="bottom" title="Red Bell">
+		Bell 2</span></a></li>
+	    <li id="bell3check"> <a href="#bell3check" data-toggle="tooltip" data-placement="bottom" title="End Bell">
+		Bell 3</span></a></li>
+	  </ul>
 	</li>
       </ul>
     </div><!-- /.container-fluid -->
