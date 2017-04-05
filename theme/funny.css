@@ -1,0 +1,60 @@
+/*
+ class of the <body> element changes according to the phase and state of the timer.
+ By using these classes, you can change style according to the phase and state.
+*/
+
+
+/* before 1st chime */
+.phase-0{
+	/* styles for body element */
+    data-phase-msg: "開始中";
+}
+.phase-0 #time{
+    data-phase-msg: "hogehoge";
+}
+
+/* after 1st chime before 2nd chime */
+.phase-1{
+	/* styles for body element */
+    data-phase-msg: "そろそろまとめを";
+
+}
+
+.phase-1 #time{
+	/* style for displayed time can be changed in this way */
+    color: yellow;
+}
+
+
+/* after 2nd chime before 3rd chime */
+.phase-2{
+	/* styles for body element */
+    data-phase-msg: "時間切れ";
+}
+.phase-2 #time{
+	/* style for displayed time can be changed in this way */
+    color: red;
+}
+
+/* after 3rd chime */
+.phase-3{
+	/* styles for body element */
+    data-phase-msg: "終われバカタレ";
+}
+
+/* after 3rd chime */
+.phase-3 #time{
+	/* styles for body element */
+    color: purple;
+}
+
+
+/* classes for states */
+.state-stanby{
+}
+
+.state-start{
+}
+
+.state-paused{
+}

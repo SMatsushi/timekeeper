@@ -1,0 +1,71 @@
+- original decliment timer ---
+Stdby)
+time_inner = 2011/1/1 0:totaltime
+time1      = 2011/1/1 0:time1 (amber time)
+time2      = 2011/1/1 0:time2 (red time)
+time3      = 2011/1/1 0:time3 (end time)
+
+display total_time by pushing stdby button...
+
+start_time = Date();
+
+
+show_time displays min and sec of 'time_inner'
+
+
+start)
+ start_time = Date() - (time_inner - (2011/1/1 0:totaltime))
+  // start time itself..
+
+update_time)
+ time_inner = (2011/1/1 0:totaltime) - (cur_time - start_time)
+
+last_time used for belling chime;
+
+-- simplified --
+Virtual time counter using Date()
+ relative from baseTime:
+   baseTime   = 2011/1/1 0:0:0
+
+Stdby)
+totalTime  = 2011/1/1 0:totalTime
+time1      = 2011/1/1 0:time1 (amber time)
+time2      = 2011/1/1 0:time2 (red time)
+time3      = 2011/1/1 0:time3 (end time)
+
+Running)
+timeInner = virtual time relative from baseTime.
+
+timeInner is compared to time1, time2, time3 for
+ bell, message, or state change.
+
+   Added Copyrite. Somewhat fixed debug/mute switch .. Changed variable names without using underscore.
+   
+    modified:   css/timekeeper.css index.html js/timekeeper.js
+
+--
+Start)
+ startClock = Date();
+ zeroClock = Date(startClock + (time2 - baseTime));
+ 　　
+Timer Update) 
+- Triggered by a helper function $.timer()
+
+- Updating timeInner as follows, which is a key:
+  curClock = Date(); // current real clock
+  timeInner=new Date(totalTime - (curClock - startClock));
+
+Display)
+ if (negTime == true)
+ 　  dispTime = new Date(baseTime - timeInner); 
+　else
+     dispTime = timeInner;
+ Then merging hours to minutes for minutes greater than 59 min.
+
+pause)
+ totalTime = timeInner; // set restarting time
+
+update_time)
+ time_inner = (2011/1/1 0:totaltime) - (cur_clock - start_clock)
+
+No need for last_time
