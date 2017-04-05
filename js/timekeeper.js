@@ -81,6 +81,8 @@ pause)
 */
 
 $(function(){
+    var defaultTheme = 'funny';
+    // var defaultTheme = 'default';
     var loadedcss = '';
     var debug = true;
     var mute = false;
@@ -127,7 +129,7 @@ $(function(){
 	if(params.th !== undefined && /^[a-zA-Z0-9\-]+$/.test(params.th)){
 	    loadedcss=params.th;
 	}else{
-	    loadedcss='default';
+	    loadedcss=defaultTheme;
 	}
 	$('head').append('<link rel="stylesheet" type="text/css" href="theme/'+loadedcss+'.css">');
     }
@@ -177,14 +179,12 @@ $(function(){
     var baseTime =  new Date('2011/2/1 00:00:00');
     var negTime = false;
     var totalTime, time1Amb, time2, time3;
+    var phaseMessage = '';
     function changeStateClass(s) {
 	if (s == 'standby') {        // standby
 	    $('#state').html('STANDBY');
 	} else if (s == 'start') {        // standby
-	    if (negTime == true)
-		$('#state').html('OVER TIME');
-	    else
-		$('#state').html('');
+	    $('#state').html(phaseMessage);
 	} else if (s == 'paused') {        //  paused
 	    $('#state').html('PAUSED');
 	}
@@ -223,22 +223,32 @@ $(function(){
     }
 
     function changePhaseClass(s) {
+	var m = $('body').data('phaseMsg'); // need camel case
+	$('#info').html(m);
 	if (s == '0') { // phase0 - start
 	    // initialize time valuables at stdby
 	    errMesg = "";
+	    phaseMessage = '';
 	    totalTime = setDate($('#totalTime').val());
 	    time1Amb = setDate($('#time1').val());
 	    time2Red = setDate($('#time2').val());
 	    time3End = setDate($('#time3').val());
-	    if (errMesg != "") 	$('#info').html(errMesg);
+	    // if (errMesg != "") 	$('#info').html(errMesg);
 	    negTime = false;
+	    // m = $('body').data('phaseMsg'); // need camel case
+	    // m = $('body').data('phase-msg');
+	    // m = $('.phase-0').data('phase-msg');
+	    // m = 'hoge';
+	    // m = 'ほげ';
 	} else if (s == '1') { // phase1 - Amber
+	    phaseMessage = '';
 	} else if (s == '2') { // phase2 - Red
 	    negTime = true;
-	    $('#state').html('OVER TIME');
+	    phaseMessage = 'OVER TIME';
 	} else if (s == '3') { // phase2 - End
-	    $('#state').html('OVER TIME');
+	    phaseMessage = 'OVER TIME';
 	}
+	$('#state').html(phaseMessage);
 	$('body').removeClass(function(index, className) {
 	    return (className.match(/\bphase-\S+/g) || []).join(' ');
 	});
@@ -249,14 +259,14 @@ $(function(){
 	event.preventDefault();
 	$('.navbar-nav li').removeClass('active');
 	$('.navbar-nav li#standby').addClass('active');
-	changeStateClass('standby');
 	changePhaseClass('0');
+	changeStateClass('standby');
 	timeInner = new Date(totalTime); 
 	// $('#info').html("timeInner=" + timeInner);
 	show_time();
     });
-    changeStateClass('standby');
     changePhaseClass('0');
+    changeStateClass('standby');
 
     var startClock, lastTime;
     function setClock(){
